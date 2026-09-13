@@ -6,5 +6,5 @@ if(window.PV_POI_TAP_READY)await Promise.race([window.PV_POI_TAP_READY,new Promi
 await import('./earth-explorer.mjs?v=2');
 await import('./category-controller-v5.mjs?v=2');
 await import('./poi-sheet-upgrade-v8.mjs?v=1');
-await import('./map-poi-interaction-v1.mjs?v=1');
+await import('./map-poi-interaction-v1.mjs?v=2');
 await import('./directions-v1.mjs?v=1');
