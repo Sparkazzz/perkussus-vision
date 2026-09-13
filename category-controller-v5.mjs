@@ -9,7 +9,7 @@ if(!window.__PV_CATEGORY_V5__){
  const tr=()=>text[lang()]||text.en;
  const FAST=new Set(['restaurant','cafe','hotel','parking','pharmacy','supermarket','shops','hospital','fuel','charging','museum','attraction','park','station','airport','atm','bank','bakery','toilets','post']);
  let map=null,active='',rows=[],seq=0,aborter=null,moveTimer=null,styleTimer=null;
- let bundle=null,bundleBox=null,bundleAt=0,bundlePromise=null,bundleAborter=null;
+ let bundle=null,bundleBox=null,bundleAt=0,bundlePromise=null,bundleAborter=null,bundlePendingBox=null,bundleSeq=0;
  const catCache=new Map();
  const style=document.createElement('style');
  style.textContent='.pv-category-chip{touch-action:manipulation;-webkit-tap-highlight-color:transparent}.pv-category-chip.pv-busy{position:relative}.pv-category-chip.pv-busy:after{content:"";width:9px;height:9px;border:2px solid rgba(255,255,255,.22);border-top-color:#72e8ff;border-radius:50%;margin-left:3px;animation:pvCatSpin .55s linear infinite}.pv-category-chip.active:not(.pv-busy):after{content:"×";font-size:16px;line-height:1;margin-left:3px;opacity:.86}@keyframes pvCatSpin{to{transform:rotate(360deg)}}';
@@ -34,19 +34,22 @@ if(!window.__PV_CATEGORY_V5__){
  }
  async function fetchCategory(id,box,signal){const u=new URL('/api/nearby',location.origin);Object.entries({mode:'category',category:id,south:round(box.south),west:round(box.west),north:round(box.north),east:round(box.east),lang:lang()}).forEach(([k,v])=>u.searchParams.set(k,String(v)));const r=await fetch(u,{headers:{accept:'application/json'},cache:'default',signal});if(!r.ok)throw new Error(`POI ${r.status}`);return r.json()}
  async function prefetch(force=false){
-   if(!map||(map.getZoom?.()||0)<10)return null;
-   const current=bbox();if(!force&&bundle&&Date.now()-bundleAt<300000&&contains(bundleBox,current))return bundle;if(bundlePromise)return bundlePromise;
+   if(!map||(map.getZoom?.()||0)<11.2)return null;
+   const current=bbox();if(!force&&bundle&&Date.now()-bundleAt<300000&&contains(bundleBox,current))return bundle;
+   if(bundlePromise&&contains(bundlePendingBox,current))return bundlePromise;
+   if(bundlePromise&&!contains(bundlePendingBox,current)){bundleSeq++;bundleAborter?.abort();bundlePromise=null;bundleAborter=null;bundlePendingBox=null}
    const box=padBox(current,.12);if(box.north-box.south>1.0||box.east-box.west>1.0)return null;
-   bundleAborter?.abort();bundleAborter=new AbortController();bundlePromise=(async()=>{
+   const mine=++bundleSeq;bundlePendingBox=box;bundleAborter=new AbortController();const signal=bundleAborter.signal;
+   bundlePromise=(async()=>{
      try{
        const u=new URL('/api/poi-bundle',location.origin);Object.entries({...box,lang:lang()}).forEach(([k,v])=>u.searchParams.set(k,String(v)));
-       const r=await fetch(u,{headers:{accept:'application/json'},cache:'default',signal:bundleAborter.signal});if(!r.ok)throw new Error(`bundle ${r.status}`);
-       const data=await r.json();bundle=data;bundleBox=box;bundleAt=Date.now();
+       const r=await fetch(u,{headers:{accept:'application/json'},cache:'default',signal});if(!r.ok)throw new Error(`bundle ${r.status}`);
+       const data=await r.json();if(mine!==bundleSeq)return null;bundle=data;bundleBox=box;bundleAt=Date.now();
        for(const id of FAST){const list=data.groups?.[id]||[];catCache.set(id,{box,time:bundleAt,rows:list,count:data.counts?.[id]??list.length})}
        if(active&&contains(box,bbox())){const c=catCache.get(active);if(c){render(c.rows,active);status(`${c.count} ${tr().results} · ${label(active)}`,!c.rows.length)}}
        return data;
      }catch(e){if(e.name!=='AbortError')console.warn('Perkussus prefetch',e);return null}
-     finally{bundlePromise=null;bundleAborter=null}
+     finally{if(mine===bundleSeq){bundlePromise=null;bundleAborter=null;bundlePendingBox=null}}
    })();return bundlePromise;
  }
  function cached(id,current){const c=catCache.get(id);return c&&Date.now()-c.time<300000&&contains(c.box,current)?c:null}
@@ -54,23 +57,12 @@ if(!window.__PV_CATEGORY_V5__){
    if(!map)return;if(user&&active===id)return clear(true);active=id;seq++;const mine=seq;aborter?.abort();aborter=null;sync();
    const z=map.getZoom?.()||0;if(z<10)return status(tr().zoom,true);const b=bbox();if(b.north-b.south>1.8||b.east-b.west>1.8)return status(tr().zoom,true);
    const c=cached(id,b);if(c){render(c.rows,id);status(`${c.count} ${tr().results} · ${label(id)}`,!c.rows.length);if(Date.now()-c.time<60000)return}
-   if(bundlePromise&&!c){
-     await Promise.race([bundlePromise,new Promise(r=>setTimeout(r,90))]);
-     if(mine!==seq||active!==id)return;const cc=cached(id,b);if(cc){render(cc.rows,id);status(`${cc.count} ${tr().results} · ${label(id)}`,!cc.rows.length);return}
-   }
+   if(z>=11.2&&!bundlePromise&&!c)prefetch(false);
+   if(bundlePromise&&!c){await Promise.race([bundlePromise,new Promise(r=>setTimeout(r,90))]);if(mine!==seq||active!==id)return;const cc=cached(id,b);if(cc){render(cc.rows,id);status(`${cc.count} ${tr().results} · ${label(id)}`,!cc.rows.length);return}}
    aborter=new AbortController();sync();if(user&&!c)status(`${tr().loading} ${label(id)}`);
-   try{
-     const data=await fetchCategory(id,b,aborter.signal);if(mine!==seq||active!==id)return;
-     const item={box:padBox(b,.04),time:Date.now(),rows:data.rows||[],count:data.count??(data.rows||[]).length};catCache.set(id,item);render(item.rows,id);status(`${item.count} ${tr().results} · ${label(id)}`,!item.rows.length);
-   }catch(e){if(e.name!=='AbortError'&&mine===seq&&!c)status(tr().none,true)}finally{if(mine===seq){aborter=null;sync()}}
+   try{const data=await fetchCategory(id,b,aborter.signal);if(mine!==seq||active!==id)return;const item={box:padBox(b,.04),time:Date.now(),rows:data.rows||[],count:data.count??(data.rows||[]).length};catCache.set(id,item);render(item.rows,id);status(`${item.count} ${tr().results} · ${label(id)}`,!item.rows.length)}catch(e){if(e.name!=='AbortError'&&mine===seq&&!c)status(tr().none,true)}finally{if(mine===seq){aborter=null;sync()}}
  }
  function bind(){let down=null,suppressUntil=0,lastHandled=0;document.addEventListener('pointerdown',e=>{const b=e.target.closest?.('[data-pv-cat]');if(b)down={id:b.dataset.pvCat,x:e.clientX,y:e.clientY,t:Date.now()}},true);document.addEventListener('pointerup',e=>{const b=e.target.closest?.('[data-pv-cat]');if(!b||!down)return;const d=down;down=null;const moved=Math.hypot(e.clientX-d.x,e.clientY-d.y),elapsed=Date.now()-d.t;if(moved>12||elapsed>750){suppressUntil=Date.now()+450;return}e.preventDefault();e.stopImmediatePropagation();lastHandled=Date.now();suppressUntil=Date.now()+800;select(b.dataset.pvCat,true)},true);document.addEventListener('click',e=>{const b=e.target.closest?.('[data-pv-cat]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();if(Date.now()<suppressUntil||Date.now()-lastHandled<800)return;select(b.dataset.pvCat,true)},true);const strip=$('#pvCategoryStrip');if(strip)new MutationObserver(sync).observe(strip,{childList:true,subtree:true});sync()}
- async function init(){
-   for(let i=0;i<160;i++){if(window.__PV_MAP__?.getZoom&&$('#pvCategoryStrip')){map=window.__PV_MAP__;break}await sleep(50)}if(!map)return;
-   bind();setTimeout(()=>prefetch(false),40);
-   map.on('moveend',()=>{clearTimeout(moveTimer);moveTimer=setTimeout(()=>{prefetch(false);if(active)select(active,false)},180)});
-   map.on('zoomend',()=>setTimeout(()=>prefetch(false),50));
-   map.on('styledata',()=>{clearTimeout(styleTimer);styleTimer=setTimeout(()=>{if(active&&rows.length&&!map.getSource('pv-poi-results'))render(rows,active)},100)});
- }
+ async function init(){for(let i=0;i<160;i++){if(window.__PV_MAP__?.getZoom&&$('#pvCategoryStrip')){map=window.__PV_MAP__;break}await sleep(50)}if(!map)return;bind();setTimeout(()=>prefetch(false),40);map.on('moveend',()=>{clearTimeout(moveTimer);moveTimer=setTimeout(()=>{prefetch(false);if(active)select(active,false)},160)});map.on('zoomend',()=>setTimeout(()=>prefetch(false),35));map.on('styledata',()=>{clearTimeout(styleTimer);styleTimer=setTimeout(()=>{if(active&&rows.length&&!map.getSource('pv-poi-results'))render(rows,active)},100)})}
  init();
 }
