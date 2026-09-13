@@ -1,11 +1,23 @@
 {
   "headers": [
     {
+      "source": "/",
+      "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
+    },
+    {
+      "source": "/index.html",
+      "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
+    },
+    {
       "source": "/bootstrap.mjs",
       "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
     },
     {
-      "source": "/poi-stability.mjs",
+      "source": "/map-bridge.mjs",
+      "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
+    },
+    {
+      "source": "/earth-explorer.mjs",
       "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
     }
   ]
