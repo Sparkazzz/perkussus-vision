@@ -23,6 +23,10 @@
     {
       "source": "/earth-explorer.mjs",
       "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
+    },
+    {
+      "source": "/place-sheet.css",
+      "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
     }
   ]
 }
