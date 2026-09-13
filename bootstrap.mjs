@@ -10,6 +10,6 @@ await import('./category-controller-v6.mjs?v=1');
 await import('./category-label-declutter-v1.mjs?v=1');
 await import('./poi-sheet-upgrade-v8.mjs?v=2');
 await import('./map-poi-interaction-v3.mjs?v=1');
-await import('./place-type-fix-v3.mjs?v=1');
+await import('./place-type-fix-v3.mjs?v=2');
 await import('./map-visual-semantic-v3.mjs?v=1');
 await import('./directions-v1.mjs?v=1');
