@@ -10,6 +10,17 @@ if(!window.__PV_WORLD_LABEL_HIERARCHY_V1__){
  function geometry(kind){return ['match',['geometry-type'],kind==='point'?['MultiPoint','Point']:['LineString','MultiLineString'],true,false]}
  function waterFilter(kind,classes){return ['all',geometry(kind),['match',['get','class'],classes,true,false]]}
  function band(z){if(z<2.6)return'world';if(z<4.3)return'continental';if(z<5.8)return'regional';return'local'}
+ function satelliteOn(){try{return !!map.getLayer('satellite-real')&&map.getLayoutProperty('satellite-real','visibility')!=='none'}catch{return false}}
+ function buildingsEnabled(){const b=document.querySelector('#buildingsToggle');return b?b.classList.contains('on'):true}
+ function syncBuildings(){
+  const hide=satelliteOn(),enabled=buildingsEnabled();
+  for(const l of map?.getStyle?.()?.layers||[]){
+   const sl=String(l?.['source-layer']||'').toLowerCase(),id=String(l?.id||'').toLowerCase();
+   if(l?.type!=='fill-extrusion')continue;
+   if(sl!=='building'&&!/building/.test(id))continue;
+   setLayout(l.id,'visibility',hide||!enabled?'none':'visible');
+  }
+ }
  function apply(){
   if(!map?.isStyleLoaded?.())return;
   const z=map.getZoom(),b=band(z);lastBand=b;
@@ -39,6 +50,8 @@ if(!window.__PV_WORLD_LABEL_HIERARCHY_V1__){
   setLayout('water_name_line_label','symbol-sort-key',['match',['get','class'],'ocean',0,'sea',1,'strait',2,'bay',3,'lake',4,9]);
   setLayout('water_name_point_label','text-padding',z<4?14:z<6?10:6);
   setLayout('water_name_line_label','text-padding',z<4?18:z<6?12:7);
+  // Satellite imagery must remain photographic: vector building extrusions otherwise cover real roofs with grey blocks.
+  syncBuildings();
  }
  function schedule(ms=25){clearTimeout(timer);timer=setTimeout(apply,ms)}
  async function init(){
@@ -47,6 +60,7 @@ if(!window.__PV_WORLD_LABEL_HIERARCHY_V1__){
   map.on('zoom',()=>{const b=band(map.getZoom());if(b!==lastBand)schedule(0)});
   map.on('styledata',()=>schedule(90));
   map.on('idle',()=>schedule(50));
+  document.addEventListener('click',e=>{if(e.target.closest?.('#mapModeBtn,[data-base],#buildingsToggle')){schedule(0);setTimeout(()=>schedule(0),60)}},true);
  }
  init();
 }
