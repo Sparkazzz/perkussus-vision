@@ -2,6 +2,10 @@ const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 let blockMapUntil=0;
 
+if(!document.querySelector('link[data-pv-place-sheet]')){
+  const link=document.createElement('link');link.rel='stylesheet';link.href='./place-sheet.css?v=1';link.dataset.pvPlaceSheet='1';document.head.appendChild(link);
+}
+
 function consume(event){event?.preventDefault?.();event?.stopPropagation?.();event?.stopImmediatePropagation?.()}
 function closeSheets(event){
   consume(event);blockMapUntil=Date.now()+500;window.__PV_BLOCK_MAP_UNTIL__=blockMapUntil;
