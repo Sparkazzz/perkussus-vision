@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Perkussus Vision — Reality Explorer</title>
   <link rel="stylesheet" href="./styles.css?v=5">
+  <link rel="stylesheet" href="./i18n.css?v=1">
 </head>
 <body>
 <div id="app" class="app">
@@ -17,8 +18,9 @@
       <span class="brand-copy"><b>PERKUSSUS</b><small>VISION · REALITY OS</small></span>
     </button>
     <div class="header-actions">
-      <button class="icon-btn" id="searchOpen" aria-label="Cerca">⌕</button>
-      <button class="icon-btn" id="layersOpen" aria-label="Livelli">≋</button>
+      <button class="icon-btn lang-btn" id="languageOpen" data-i18n-aria="language" aria-label="Lingua">IT</button>
+      <button class="icon-btn" id="searchOpen" data-i18n-aria="search" aria-label="Cerca">⌕</button>
+      <button class="icon-btn" id="layersOpen" data-i18n-aria="layers" aria-label="Livelli">≋</button>
     </div>
   </header>
 
@@ -27,18 +29,18 @@
       <div id="map"></div>
       <div class="map-ui">
         <div class="chips">
-          <div class="chip"><span class="live-dot"></span><strong>REAL EARTH</strong></div>
-          <div class="chip secondary" id="dataChip">OPENSTREETMAP · CARICAMENTO…</div>
+          <div class="chip"><span class="live-dot"></span><strong data-i18n="realEarth">TERRA REALE</strong></div>
+          <div class="chip secondary" id="dataChip" data-i18n="dataLoading">OPENSTREETMAP · CARICAMENTO…</div>
         </div>
         <div class="map-tools">
-          <button class="map-tool" id="locateBtn" aria-label="La mia posizione">◎</button>
+          <button class="map-tool" id="locateBtn" data-i18n-aria="locating" aria-label="La mia posizione">◎</button>
           <button class="map-tool" id="homeBtn" aria-label="Vista globale">⌂</button>
           <button class="map-tool text-tool" id="mapModeBtn" aria-label="Mappa o satellite">MAP</button>
-          <button class="map-tool" id="terrainBtn" aria-label="Terreno 3D">▲</button>
+          <button class="map-tool" id="terrainBtn" data-i18n-aria="terrain3d" aria-label="Terreno 3D">▲</button>
           <button class="map-tool text-tool" id="projectionBtn" aria-label="Globo o mappa piatta">3D</button>
           <button class="map-tool" id="earthInfoOpen" aria-label="Fonti dati">i</button>
         </div>
-        <div class="gesture" id="gestureHint">Tocca un punto per info · trascina · pizzica per zoomare</div>
+        <div class="gesture" id="gestureHint" data-i18n="gesture">Tocca un punto per info · trascina · pizzica per zoomare</div>
       </div>
       <div class="boot" id="boot">
         <div class="boot-card">
@@ -47,86 +49,106 @@
           <h2 id="bootTitle">Caricamento Terra reale…</h2>
           <p id="bootText">Avvio del motore cartografico.</p>
           <div class="boot-progress"><span id="bootBar"></span></div>
-          <button id="retryBtn" class="primary hidden">RIPROVA</button>
+          <button id="retryBtn" class="primary hidden" data-i18n="retry">RIPROVA</button>
         </div>
       </div>
     </section>
 
     <section class="view content-view" id="liveView" data-view="live">
       <div class="content-shell">
-        <div class="eyebrow">LIVE EARTH · DATI OPERATIVI</div>
-        <h1 class="hero-title">Il pianeta mentre cambia.</h1>
-        <p class="hero-copy">Solo feed realmente collegati, con fonte e aggiornamento dichiarati.</p>
+        <div class="eyebrow" data-i18n="liveEyebrow">LIVE EARTH · DATI OPERATIVI</div>
+        <h1 class="hero-title" data-i18n="liveTitle">Il pianeta mentre cambia.</h1>
+        <p class="hero-copy" data-i18n="liveCopy">Solo feed realmente collegati, con fonte e aggiornamento dichiarati.</p>
         <div class="stat-grid">
-          <article class="stat"><small>USGS · 24H</small><b id="liveQuakeCount">—</b><span>terremoti nel feed</span></article>
-          <article class="stat"><small>MAGNITUDO MAX</small><b id="liveMaxMag">—</b><span id="liveMaxPlace">in attesa dati</span></article>
+          <article class="stat"><small data-i18n="usgs24">USGS · 24H</small><b id="liveQuakeCount">—</b><span data-i18n="quakesInFeed">terremoti nel feed</span></article>
+          <article class="stat"><small data-i18n="maxMagnitude">MAGNITUDO MAX</small><b id="liveMaxMag">—</b><span id="liveMaxPlace" data-i18n="waitingData">in attesa dati</span></article>
         </div>
-        <div class="section-title"><b>Eventi recenti</b><small>tocca un evento per localizzarlo</small></div>
-        <div id="quakeList" class="event-list"><div class="skeleton">Caricamento USGS…</div></div>
+        <div class="section-title"><b data-i18n="recentEvents">Eventi recenti</b><small data-i18n="tapEvent">tocca un evento per localizzarlo</small></div>
+        <div id="quakeList" class="event-list"><div class="skeleton" data-i18n="loadingUsgs">Caricamento USGS…</div></div>
       </div>
     </section>
 
     <section class="view content-view" id="spaceView" data-view="space">
-      <div class="content-shell"><div class="eyebrow">SPACE</div><h1 class="hero-title">Spazio, senza dati inventati.</h1><p class="hero-copy">Il modulo Space verrà collegato a cataloghi e missioni reali.</p><div class="notice">Stato: interfaccia pronta · integrazione dati astronomici in sviluppo.</div></div>
+      <div class="content-shell"><div class="eyebrow">SPACE</div><h1 class="hero-title" data-i18n="spaceTitle">Spazio, senza dati inventati.</h1><p class="hero-copy" data-i18n="spaceCopy">Il modulo Space verrà collegato a cataloghi e missioni reali.</p><div class="notice" data-i18n="spaceStatus">Stato: interfaccia pronta · integrazione dati astronomici in sviluppo.</div></div>
     </section>
 
     <section class="view content-view" id="timeView" data-view="time">
-      <div class="content-shell"><div class="eyebrow">TIME · REALITY REPLAY</div><h1 class="hero-title">La stessa realtà, nel tempo.</h1><p class="hero-copy">Archivi osservati, ricostruzioni scientifiche e simulazioni resteranno separati e dichiarati.</p><div class="notice">Stato: interfaccia pronta · timeline scientifica in sviluppo.</div></div>
+      <div class="content-shell"><div class="eyebrow" data-i18n="timeEyebrow">TIME · REALITY REPLAY</div><h1 class="hero-title" data-i18n="timeTitle">La stessa realtà, nel tempo.</h1><p class="hero-copy" data-i18n="timeCopy">Archivi osservati, ricostruzioni scientifiche e simulazioni resteranno separati e dichiarati.</p><div class="notice" data-i18n="timeStatus">Stato: interfaccia pronta · timeline scientifica in sviluppo.</div></div>
     </section>
   </main>
 
   <nav class="bottom-nav" aria-label="Navigazione principale">
-    <button class="nav-btn active" data-nav="earth"><span>◎</span><b>EARTH</b></button>
-    <button class="nav-btn" data-nav="live"><span>⌁</span><b>LIVE</b></button>
-    <button class="nav-btn" data-nav="space"><span>◌</span><b>SPACE</b></button>
-    <button class="nav-btn" data-nav="time"><span>◷</span><b>TIME</b></button>
-    <button class="nav-btn" id="moreOpen"><span>•••</span><b>ALTRO</b></button>
+    <button class="nav-btn active" data-nav="earth"><span>◎</span><b data-i18n="navEarth">EARTH</b></button>
+    <button class="nav-btn" data-nav="live"><span>⌁</span><b data-i18n="navLive">LIVE</b></button>
+    <button class="nav-btn" data-nav="space"><span>◌</span><b data-i18n="navSpace">SPACE</b></button>
+    <button class="nav-btn" data-nav="time"><span>◷</span><b data-i18n="navTime">TIME</b></button>
+    <button class="nav-btn" id="moreOpen"><span>•••</span><b data-i18n="navMore">ALTRO</b></button>
   </nav>
 
   <div class="scrim" id="scrim"></div>
 
   <section class="sheet" id="searchSheet" aria-hidden="true">
-    <header class="sheet-head"><div><small>ASK & GO</small><h2>Cerca un luogo reale</h2></div><button class="close-btn" data-close>×</button></header>
+    <header class="sheet-head"><div><small data-i18n="askGo">ASK & GO</small><h2 data-i18n="searchPlace">Cerca un luogo reale</h2></div><button class="close-btn" data-close>×</button></header>
     <div class="sheet-body">
-      <form id="searchForm" class="search-row"><input id="searchInput" placeholder="Roma, Everest, Tokyo…" autocomplete="off"><button class="primary">VAI</button></form>
+      <form id="searchForm" class="search-row"><input id="searchInput" data-i18n-placeholder="searchPlaceholder" placeholder="Roma, Everest, Tokyo…" autocomplete="off"><button class="primary" data-i18n="go">VAI</button></form>
       <div id="searchStatus" class="status-line"></div>
       <div class="quick-grid">
-        <button class="quick" data-place="rome"><b>Roma</b><small>Italia</small></button>
-        <button class="quick" data-place="everest"><b>Everest</b><small>Himalaya</small></button>
-        <button class="quick" data-place="kilauea"><b>Kīlauea</b><small>Hawaiʻi</small></button>
-        <button class="quick" data-place="tokyo"><b>Tokyo</b><small>Giappone</small></button>
+        <button class="quick" data-place="rome"><b data-i18n="rome">Roma</b><small data-i18n="italy">Italia</small></button>
+        <button class="quick" data-place="everest"><b data-i18n="everest">Everest</b><small data-i18n="himalaya">Himalaya</small></button>
+        <button class="quick" data-place="kilauea"><b data-i18n="kilauea">Kīlauea</b><small data-i18n="hawaii">Hawaiʻi</small></button>
+        <button class="quick" data-place="tokyo"><b data-i18n="tokyo">Tokyo</b><small data-i18n="japan">Giappone</small></button>
       </div>
     </div>
   </section>
 
   <section class="sheet" id="layersSheet" aria-hidden="true">
-    <header class="sheet-head"><div><small>REALITY LAYERS</small><h2>Come vuoi vedere la Terra</h2></div><button class="close-btn" data-close>×</button></header>
+    <header class="sheet-head"><div><small data-i18n="realityLayers">REALITY LAYERS</small><h2 data-i18n="earthViewTitle">Come vuoi vedere la Terra</h2></div><button class="close-btn" data-close>×</button></header>
     <div class="sheet-body">
-      <div class="segmented" id="baseModeControl"><button class="active" data-base="map">MAPPA</button><button data-base="satellite">SATELLITE</button></div>
-      <div class="list-row"><div><b>Nomi di paesi, città e luoghi</b><small>OpenStreetMap / OpenFreeMap</small></div><button class="toggle on" id="labelsToggle"></button></div>
-      <div class="list-row"><div><b>Terreno 3D</b><small>Modello digitale di elevazione Mapterhorn</small></div><button class="toggle" id="terrainToggle"></button></div>
-      <div class="list-row"><div><b>Edifici 3D</b><small>Quando disponibili nei dati OpenStreetMap</small></div><button class="toggle on" id="buildingsToggle"></button></div>
-      <div class="list-row"><div><b>Terremoti</b><small>USGS · ultime 24 ore</small></div><button class="toggle on" id="quakeToggle"></button></div>
-      <div class="source-note">La vista satellite usa immagini reali ma non è una ripresa live. La mappa vettoriale mostra strade, nomi e punti d'interesse a livelli di zoom progressivi.</div>
+      <div class="segmented" id="baseModeControl"><button class="active" data-base="map" data-i18n="map">MAPPA</button><button data-base="satellite" data-i18n="satellite">SATELLITE</button></div>
+      <div class="list-row"><div><b data-i18n="labelsTitle">Nomi di paesi, città e luoghi</b><small data-i18n="labelsSub">OpenStreetMap / OpenFreeMap</small></div><button class="toggle on" id="labelsToggle"></button></div>
+      <div class="list-row"><div><b data-i18n="terrain3d">Terreno 3D</b><small data-i18n="terrainSub">Modello digitale di elevazione Mapterhorn</small></div><button class="toggle" id="terrainToggle"></button></div>
+      <div class="list-row"><div><b data-i18n="buildings3d">Edifici 3D</b><small data-i18n="buildingsSub">Quando disponibili nei dati OpenStreetMap</small></div><button class="toggle on" id="buildingsToggle"></button></div>
+      <div class="list-row"><div><b data-i18n="quakes">Terremoti</b><small data-i18n="quakesSub">USGS · ultime 24 ore</small></div><button class="toggle on" id="quakeToggle"></button></div>
+      <div class="source-note" data-i18n="satelliteNote">La vista satellite usa immagini reali ma non è una ripresa live. La mappa vettoriale mostra strade, nomi e punti d'interesse a livelli di zoom progressivi.</div>
     </div>
   </section>
 
   <section class="sheet" id="infoSheet" aria-hidden="true">
-    <header class="sheet-head"><div><small id="infoKicker">VERIFIED REALITY</small><h2 id="infoTitle">Informazioni</h2></div><button class="close-btn" data-close>×</button></header>
+    <header class="sheet-head"><div><small id="infoKicker" data-i18n="verifiedReality">VERIFIED REALITY</small><h2 id="infoTitle" data-i18n="information">Informazioni</h2></div><button class="close-btn" data-close>×</button></header>
     <div class="sheet-body" id="infoBody"></div>
   </section>
 
   <section class="sheet" id="moreSheet" aria-hidden="true">
-    <header class="sheet-head"><div><small>PERKUSSUS</small><h2>Altri moduli</h2></div><button class="close-btn" data-close>×</button></header>
+    <header class="sheet-head"><div><small>PERKUSSUS</small><h2 data-i18n="moreModules">Altri moduli</h2></div><button class="close-btn" data-close>×</button></header>
     <div class="sheet-body menu-list">
-      <button class="menu-item" data-action="sources"><span>◇</span><div><b>Fonti & trasparenza</b><small>Provenienza, data e licenze</small></div></button>
-      <button class="menu-item" data-action="missions"><span>△</span><div><b>Missions</b><small>In sviluppo</small></div></button>
-      <button class="menu-item" data-action="passport"><span>▣</span><div><b>Passport</b><small>In sviluppo</small></div></button>
+      <button class="menu-item" data-action="sources"><span>◇</span><div><b data-i18n="sourcesTransparency">Fonti & trasparenza</b><small data-i18n="provenance">Provenienza, data e licenze</small></div></button>
+      <button class="menu-item" data-action="missions"><span>△</span><div><b data-i18n="missions">Missions</b><small data-i18n="inDevelopment">In sviluppo</small></div></button>
+      <button class="menu-item" data-action="passport"><span>▣</span><div><b data-i18n="passport">Passport</b><small data-i18n="inDevelopment">In sviluppo</small></div></button>
+    </div>
+  </section>
+
+  <section class="sheet" id="languageSheet" aria-hidden="true">
+    <header class="sheet-head"><div><small>PERKUSSUS · GLOBAL</small><h2 data-i18n="chooseLanguage">Scegli la lingua</h2></div><button class="close-btn" data-lang-close>×</button></header>
+    <div class="sheet-body">
+      <div class="language-list">
+        <button class="language-option" data-language="it"><span class="flag">🇮🇹</span><span class="language-copy"><b>Italiano</b><small>Italiano</small></span></button>
+        <button class="language-option" data-language="en"><span class="flag">🇬🇧</span><span class="language-copy"><b>English</b><small>English</small></span></button>
+        <button class="language-option" data-language="fr"><span class="flag">🇫🇷</span><span class="language-copy"><b>Français</b><small>Français</small></span></button>
+        <button class="language-option" data-language="es"><span class="flag">🇪🇸</span><span class="language-copy"><b>Español</b><small>Español</small></span></button>
+        <button class="language-option" data-language="de"><span class="flag">🇩🇪</span><span class="language-copy"><b>Deutsch</b><small>Deutsch</small></span></button>
+        <button class="language-option" data-language="ru"><span class="flag">🇷🇺</span><span class="language-copy"><b>Русский</b><small>Русский</small></span></button>
+        <button class="language-option" data-language="hi"><span class="flag">🇮🇳</span><span class="language-copy"><b>हिन्दी</b><small>Hindi</small></span></button>
+        <button class="language-option" data-language="pt"><span class="flag">🇵🇹</span><span class="language-copy"><b>Português</b><small>Português</small></span></button>
+        <button class="language-option" data-language="zh"><span class="flag">🇨🇳</span><span class="language-copy"><b>简体中文</b><small>Chinese · Simplified</small></span></button>
+        <button class="language-option" data-language="ja"><span class="flag">🇯🇵</span><span class="language-copy"><b>日本語</b><small>Japanese</small></span></button>
+      </div>
+      <div class="language-note" data-i18n="languageNote">L’interfaccia, le schede informative e le fonti enciclopediche seguono la lingua scelta. I nomi geografici usano la traduzione disponibile; in assenza di una traduzione ufficiale resta il nome locale.</div>
     </div>
   </section>
 
   <div class="toast" id="toast"></div>
 </div>
+<script src="./i18n.js?v=1"></script>
 <script type="module" src="./app.mjs?v=5"></script>
 </body>
 </html>
