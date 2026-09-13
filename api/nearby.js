@@ -37,6 +37,9 @@ function pointOf(e){
 function localizedName(tags={},lang='it'){
   return tags[`name:${lang}`]||tags.name||tags['name:en']||tags.brand||'';
 }
+function elementKind(tags={}){
+  return String(tags.amenity||tags.shop||tags.tourism||tags.leisure||tags.healthcare||tags.railway||tags.public_transport||tags.aeroway||tags.office||tags.craft||'').toLocaleLowerCase();
+}
 function haversine(a,b){
   const R=6371000,d=Math.PI/180;
   const dLat=(b[1]-a[1])*d,dLon=(b[0]-a[0])*d,la1=a[1]*d,la2=b[1]*d;
@@ -61,12 +64,12 @@ async function overpass(query){
 function normalizeElement(e,lang,center){
   const point=pointOf(e);if(!point)return null;
   const tags=e.tags||{};
-  return {id:e.id,type:e.type,lat:point[1],lon:point[0],name:localizedName(tags,lang),tags,distance:center?haversine(center,point):null};
+  return {id:e.id,type:e.type,lat:point[1],lon:point[0],name:localizedName(tags,lang),kind:elementKind(tags),tags,distance:center?haversine(center,point):null};
 }
 
 module.exports=async function handler(req,res){
   res.setHeader('Content-Type','application/json; charset=utf-8');
-  res.setHeader('Cache-Control','public, s-maxage=60, stale-while-revalidate=300');
+  res.setHeader('Cache-Control','public, s-maxage=45, stale-while-revalidate=180');
   const q=req.query||{};const mode=String(q.mode||'category');const lang=String(q.lang||'it').slice(0,5);
   try{
     if(mode==='category'){
@@ -83,18 +86,32 @@ module.exports=async function handler(req,res){
       return res.status(200).json({category,count:rows.length,rows});
     }
     if(mode==='nearest'){
-      const lat=n(q.lat),lon=n(q.lon),radius=Math.max(20,Math.min(250,n(q.radius)||90));
+      const lat=n(q.lat),lon=n(q.lon),radius=Math.max(20,Math.min(260,n(q.radius)||90));
       if(lat===null||lon===null)return res.status(400).json({error:'invalid_point'});
       const filters=['[amenity]','[shop]','[tourism]','[leisure]','[healthcare]','[office]','[craft]','[railway]','[public_transport]','[aeroway]'];
       const body=filters.map(f=>`nwr(around:${radius},${lat},${lon})${f};`).join('');
-      const query=`[out:json][timeout:10];(${body});out center tags 90;`;
+      const query=`[out:json][timeout:10];(${body});out center tags 120;`;
       const target=String(q.name||'').trim().toLocaleLowerCase();
+      const hint=String(q.hint||'').trim().toLocaleLowerCase().replaceAll('_',' ');
       const rows=(await overpass(query)).map(e=>normalizeElement(e,lang,[lon,lat])).filter(Boolean);
       rows.sort((a,b)=>{
         const score=x=>{
           const name=String(x.name||'').toLocaleLowerCase();
-          const match=target?(name===target?0:(name.includes(target)||target.includes(name)?12:70)):0;
-          return (x.distance??999999)+match;
+          let namePenalty=0;
+          if(target){
+            if(name===target)namePenalty=0;
+            else if(name&&(name.includes(target)||target.includes(name)))namePenalty=55;
+            else if(!name)namePenalty=650;
+            else namePenalty=430;
+          }
+          let kindPenalty=0;
+          if(hint){
+            const k=String(x.kind||'').replaceAll('_',' ');
+            if(k===hint)kindPenalty=0;
+            else if(k&&(k.includes(hint)||hint.includes(k)))kindPenalty=35;
+            else kindPenalty=110;
+          }
+          return (x.distance??999999)+namePenalty+kindPenalty;
         };
         return score(a)-score(b);
       });
