@@ -17,6 +17,10 @@
       "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
     },
     {
+      "source": "/ui-controller.mjs",
+      "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
+    },
+    {
       "source": "/earth-explorer.mjs",
       "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
     }
