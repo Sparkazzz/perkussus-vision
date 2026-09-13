@@ -1,0 +1,12 @@
+{
+  "headers": [
+    {
+      "source": "/bootstrap.mjs",
+      "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
+    },
+    {
+      "source": "/poi-stability.mjs",
+      "headers": [{"key":"Cache-Control","value":"no-store, max-age=0"}]
+    }
+  ]
+}
