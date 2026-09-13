@@ -30,7 +30,7 @@ function categoriesOf(t={}){
   if(a==='pharmacy'||health==='pharmacy')out.push('pharmacy');
   if(['supermarket','grocery'].includes(shop))out.push('supermarket');
   if(shop)out.push('shops');
-  if(['hospital','clinic','doctors'].includes(a)||['hospital','clinic','doctor','centre'].includes(health))out.push('hospital');
+  if(['hospital','clinic','doctors'].includes(a)||['hospital','clinic','doctor','centre','medical_centre'].includes(health))out.push('hospital');
   if(a==='fuel')out.push('fuel');
   if(a==='charging_station')out.push('charging');
   if(['museum','gallery'].includes(tour))out.push('museum');
@@ -68,14 +68,14 @@ module.exports=async function handler(req,res){
   const bbox=`${south},${west},${north},${east}`;
   const query=`[out:json][timeout:13];(
     nwr["amenity"~"^(hospital|clinic|doctors|pharmacy|fuel|charging_station|atm|bank|toilets|post_office|post_box|bus_station|parking|parking_entrance|restaurant|fast_food|food_court|cafe|bar|pub|ice_cream)$"](${bbox});
-    nwr["healthcare"~"^(hospital|clinic|doctor|centre|pharmacy)$"](${bbox});
+    nwr["healthcare"~"^(hospital|clinic|doctor|centre|medical_centre|pharmacy)$"](${bbox});
     nwr["tourism"~"^(hotel|guest_house|hostel|motel|apartment|chalet|museum|gallery|attraction|viewpoint|zoo|theme_park|aquarium)$"](${bbox});
     nwr["leisure"~"^(park|garden|nature_reserve)$"](${bbox});
     nwr["railway"~"^(station|halt)$"](${bbox});
     nwr["public_transport"~"^(station|stop_position|platform)$"](${bbox});
     nwr["aeroway"~"^(aerodrome|terminal)$"](${bbox});
-    nwr["shop"](${bbox});
-  );out center tags 3200;`;
+    nwr["shop"~"^(supermarket|grocery|bakery|pastry)$"](${bbox});
+  );out center tags 8000;`;
   try{
     const elements=await overpass(query),groups=Object.fromEntries(CATEGORIES.map(k=>[k,[]])),seen=Object.fromEntries(CATEGORIES.map(k=>[k,new Set()]));
     for(const e of elements){
