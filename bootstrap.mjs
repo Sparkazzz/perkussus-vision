@@ -1,12 +1,13 @@
 await import('./map-bridge.mjs?v=2');
 await import('./app.mjs?v=5');
 await import('./ui-controller.mjs?v=2');
-await import('./review-speed-v2.mjs?v=2');
+await import('./review-speed-v3.mjs?v=1');
 await import('./poi-tap-fix.mjs?v=2');
 if(window.PV_POI_TAP_READY)await Promise.race([window.PV_POI_TAP_READY,new Promise(r=>setTimeout(r,2500))]);
 await import('./earth-explorer.mjs?v=2');
-await import('./category-controller-v5.mjs?v=4');
+await import('./category-controller-v6.mjs?v=1');
 await import('./poi-sheet-upgrade-v8.mjs?v=2');
-await import('./map-poi-interaction-v1.mjs?v=3');
-await import('./place-type-fix-v1.mjs?v=1');
+await import('./map-poi-interaction-v2.mjs?v=1');
+await import('./place-type-fix-v1.mjs?v=2');
+await import('./map-visual-persistence-v2.mjs?v=1');
 await import('./directions-v1.mjs?v=1');
