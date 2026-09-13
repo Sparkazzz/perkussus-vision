@@ -1,22 +1,22 @@
 const CATEGORY_FILTERS={
-  restaurant:['["amenity"="restaurant"]'],
-  cafe:['["amenity"~"^(cafe|bar|pub)$"]'],
-  hotel:['["tourism"~"^(hotel|guest_house|hostel|motel)$"]'],
+  restaurant:['["amenity"~"^(restaurant|fast_food|food_court)$"]'],
+  cafe:['["amenity"~"^(cafe|bar|pub|ice_cream)$"]'],
+  hotel:['["tourism"~"^(hotel|guest_house|hostel|motel|apartment|chalet)$"]'],
   parking:['["amenity"~"^(parking|parking_entrance)$"]'],
-  pharmacy:['["amenity"="pharmacy"]'],
-  supermarket:['["shop"="supermarket"]'],
+  pharmacy:['["amenity"="pharmacy"]','["healthcare"="pharmacy"]'],
+  supermarket:['["shop"~"^(supermarket|grocery)$"]'],
   shops:['["shop"]'],
-  hospital:['["amenity"~"^(hospital|clinic|doctors)$"]','["healthcare"~"^(hospital|clinic|doctor)$"]'],
+  hospital:['["amenity"~"^(hospital|clinic|doctors)$"]','["healthcare"~"^(hospital|clinic|doctor|centre)$"]'],
   fuel:['["amenity"="fuel"]'],
   charging:['["amenity"="charging_station"]'],
-  museum:['["tourism"="museum"]'],
-  attraction:['["tourism"~"^(attraction|viewpoint|zoo|theme_park)$"]'],
-  park:['["leisure"="park"]'],
-  station:['["railway"="station"]','["public_transport"="station"]'],
-  airport:['["aeroway"="aerodrome"]'],
+  museum:['["tourism"~"^(museum|gallery)$"]'],
+  attraction:['["tourism"~"^(attraction|viewpoint|zoo|theme_park|aquarium)$"]'],
+  park:['["leisure"~"^(park|garden|nature_reserve)$"]'],
+  station:['["railway"~"^(station|halt)$"]','["public_transport"~"^(station|stop_position|platform)$"]','["amenity"="bus_station"]'],
+  airport:['["aeroway"~"^(aerodrome|terminal)$"]'],
   atm:['["amenity"="atm"]'],
   bank:['["amenity"="bank"]'],
-  bakery:['["shop"="bakery"]'],
+  bakery:['["shop"~"^(bakery|pastry)$"]'],
   toilets:['["amenity"="toilets"]'],
   police:['["amenity"="police"]'],
   post:['["amenity"~"^(post_office|post_box)$"]']
@@ -35,10 +35,43 @@ function pointOf(e){
   return null;
 }
 function localizedName(tags={},lang='it'){
-  return tags[`name:${lang}`]||tags.name||tags['name:en']||tags.brand||'';
+  return tags[`name:${lang}`]||tags.name||tags['name:en']||tags.brand||tags.operator||'';
 }
 function elementKind(tags={}){
-  return String(tags.amenity||tags.shop||tags.tourism||tags.leisure||tags.healthcare||tags.railway||tags.public_transport||tags.aeroway||tags.office||tags.craft||'').toLocaleLowerCase();
+  const amenity=String(tags.amenity||'').toLowerCase();
+  const shop=String(tags.shop||'').toLowerCase();
+  const tourism=String(tags.tourism||'').toLowerCase();
+  const leisure=String(tags.leisure||'').toLowerCase();
+  const healthcare=String(tags.healthcare||'').toLowerCase();
+  const railway=String(tags.railway||'').toLowerCase();
+  const publicTransport=String(tags.public_transport||'').toLowerCase();
+  const aeroway=String(tags.aeroway||'').toLowerCase();
+  const cuisine=String(tags.cuisine||'').toLowerCase().split(/[;,]/).map(x=>x.trim());
+  const building=String(tags.building||'').toLowerCase();
+  const religion=String(tags.religion||'').toLowerCase();
+
+  if(['restaurant','fast_food','food_court'].includes(amenity)&&cuisine.some(x=>x==='pizza'||x==='italian_pizza'))return'pizzeria';
+  if(amenity==='place_of_worship'){
+    if(building==='cathedral')return'cathedral';
+    if(building==='chapel')return'chapel';
+    if(religion==='christian'||building==='church')return'church';
+    if(religion==='muslim'||building==='mosque')return'mosque';
+    if(religion==='jewish'||building==='synagogue')return'synagogue';
+    return'place_of_worship';
+  }
+  if(amenity==='bus_station')return'bus_station';
+  if(amenity)return amenity;
+  if(shop)return shop;
+  if(tourism)return tourism;
+  if(leisure)return leisure;
+  if(healthcare)return healthcare;
+  if(railway)return railway==='halt'?'station':railway;
+  if(publicTransport)return publicTransport;
+  if(aeroway)return aeroway;
+  if(tags.office)return String(tags.office).toLowerCase();
+  if(tags.craft)return String(tags.craft).toLowerCase();
+  if(building&&building!=='yes')return building;
+  return'place';
 }
 function haversine(a,b){
   const R=6371000,d=Math.PI/180;
@@ -69,7 +102,7 @@ function normalizeElement(e,lang,center){
 
 module.exports=async function handler(req,res){
   res.setHeader('Content-Type','application/json; charset=utf-8');
-  res.setHeader('Cache-Control','public, s-maxage=45, stale-while-revalidate=180');
+  res.setHeader('Cache-Control','public, s-maxage=120, stale-while-revalidate=600');
   const q=req.query||{};const mode=String(q.mode||'category');const lang=String(q.lang||'it').slice(0,5);
   try{
     if(mode==='category'){
@@ -80,17 +113,19 @@ module.exports=async function handler(req,res){
       if(north-south>1.8||east-west>1.8)return res.status(400).json({error:'area_too_large'});
       const bbox=`${south},${west},${north},${east}`;
       const body=filters.map(f=>`nwr${f}(${bbox});`).join('');
-      const query=`[out:json][timeout:12];(${body});out center tags 220;`;
+      const limit=category==='shops'?1600:1200;
+      const query=`[out:json][timeout:12];(${body});out center tags ${limit};`;
       const center=[(west+east)/2,(south+north)/2];
-      const rows=(await overpass(query)).map(e=>normalizeElement(e,lang,center)).filter(Boolean).sort((a,b)=>(a.distance??0)-(b.distance??0)).slice(0,220);
+      const seen=new Set();
+      const rows=(await overpass(query)).map(e=>normalizeElement(e,lang,center)).filter(Boolean).filter(r=>{const k=`${r.type}:${r.id}`;if(seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>(a.distance??0)-(b.distance??0));
       return res.status(200).json({category,count:rows.length,rows});
     }
     if(mode==='nearest'){
-      const lat=n(q.lat),lon=n(q.lon),radius=Math.max(20,Math.min(260,n(q.radius)||90));
+      const lat=n(q.lat),lon=n(q.lon),radius=Math.max(20,Math.min(320,n(q.radius)||100));
       if(lat===null||lon===null)return res.status(400).json({error:'invalid_point'});
-      const filters=['[amenity]','[shop]','[tourism]','[leisure]','[healthcare]','[office]','[craft]','[railway]','[public_transport]','[aeroway]'];
+      const filters=['[amenity]','[shop]','[tourism]','[leisure]','[healthcare]','[office]','[craft]','[railway]','[public_transport]','[aeroway]','[building~"^(church|cathedral|chapel|mosque|synagogue|hospital|school|university)$"]'];
       const body=filters.map(f=>`nwr(around:${radius},${lat},${lon})${f};`).join('');
-      const query=`[out:json][timeout:10];(${body});out center tags 120;`;
+      const query=`[out:json][timeout:10];(${body});out center tags 180;`;
       const target=String(q.name||'').trim().toLocaleLowerCase();
       const hint=String(q.hint||'').trim().toLocaleLowerCase().replaceAll('_',' ');
       const rows=(await overpass(query)).map(e=>normalizeElement(e,lang,[lon,lat])).filter(Boolean);
@@ -100,16 +135,16 @@ module.exports=async function handler(req,res){
           let namePenalty=0;
           if(target){
             if(name===target)namePenalty=0;
-            else if(name&&(name.includes(target)||target.includes(name)))namePenalty=55;
+            else if(name&&(name.includes(target)||target.includes(name)))namePenalty=45;
             else if(!name)namePenalty=650;
             else namePenalty=430;
           }
           let kindPenalty=0;
-          if(hint){
+          if(hint&&hint!=='place'&&hint!=='poi'&&hint!=='luogo'){
             const k=String(x.kind||'').replaceAll('_',' ');
             if(k===hint)kindPenalty=0;
-            else if(k&&(k.includes(hint)||hint.includes(k)))kindPenalty=35;
-            else kindPenalty=110;
+            else if(k&&(k.includes(hint)||hint.includes(k)))kindPenalty=30;
+            else kindPenalty=95;
           }
           return (x.distance??999999)+namePenalty+kindPenalty;
         };
