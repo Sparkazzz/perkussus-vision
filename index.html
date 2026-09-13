@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Perkussus Vision — Reality Explorer</title>
-  <link rel="stylesheet" href="./styles.css?v=4">
+  <link rel="stylesheet" href="./styles.css?v=5">
 </head>
 <body>
 <div id="app" class="app">
@@ -28,15 +28,17 @@
       <div class="map-ui">
         <div class="chips">
           <div class="chip"><span class="live-dot"></span><strong>REAL EARTH</strong></div>
-          <div class="chip secondary" id="dataChip">INIZIALIZZAZIONE…</div>
+          <div class="chip secondary" id="dataChip">OPENSTREETMAP · CARICAMENTO…</div>
         </div>
         <div class="map-tools">
           <button class="map-tool" id="locateBtn" aria-label="La mia posizione">◎</button>
           <button class="map-tool" id="homeBtn" aria-label="Vista globale">⌂</button>
-          <button class="map-tool" id="projectionBtn" aria-label="Cambia proiezione">3D</button>
+          <button class="map-tool text-tool" id="mapModeBtn" aria-label="Mappa o satellite">MAP</button>
+          <button class="map-tool" id="terrainBtn" aria-label="Terreno 3D">▲</button>
+          <button class="map-tool text-tool" id="projectionBtn" aria-label="Globo o mappa piatta">3D</button>
           <button class="map-tool" id="earthInfoOpen" aria-label="Fonti dati">i</button>
         </div>
-        <div class="gesture" id="gestureHint">Trascina · pizzica per zoomare · 2 dita per inclinare</div>
+        <div class="gesture" id="gestureHint">Tocca un punto per info · trascina · pizzica per zoomare</div>
       </div>
       <div class="boot" id="boot">
         <div class="boot-card">
@@ -54,22 +56,22 @@
       <div class="content-shell">
         <div class="eyebrow">LIVE EARTH · DATI OPERATIVI</div>
         <h1 class="hero-title">Il pianeta mentre cambia.</h1>
-        <p class="hero-copy">Qui compaiono solo feed realmente collegati. Ogni dataset mostra fonte e aggiornamento.</p>
+        <p class="hero-copy">Solo feed realmente collegati, con fonte e aggiornamento dichiarati.</p>
         <div class="stat-grid">
           <article class="stat"><small>USGS · 24H</small><b id="liveQuakeCount">—</b><span>terremoti nel feed</span></article>
           <article class="stat"><small>MAGNITUDO MAX</small><b id="liveMaxMag">—</b><span id="liveMaxPlace">in attesa dati</span></article>
         </div>
-        <div class="section-title"><b>Eventi recenti</b><small>tocca un evento per localizzarlo sulla Terra</small></div>
+        <div class="section-title"><b>Eventi recenti</b><small>tocca un evento per localizzarlo</small></div>
         <div id="quakeList" class="event-list"><div class="skeleton">Caricamento USGS…</div></div>
       </div>
     </section>
 
     <section class="view content-view" id="spaceView" data-view="space">
-      <div class="content-shell"><div class="eyebrow">SPACE</div><h1 class="hero-title">Spazio, senza dati inventati.</h1><p class="hero-copy">Il modulo Space verrà collegato a cataloghi e missioni reali. Finché un dataset non è integrato, Perkussus lo indica chiaramente come non attivo.</p><div class="notice">Stato: interfaccia pronta · integrazione dati astronomici in sviluppo.</div></div>
+      <div class="content-shell"><div class="eyebrow">SPACE</div><h1 class="hero-title">Spazio, senza dati inventati.</h1><p class="hero-copy">Il modulo Space verrà collegato a cataloghi e missioni reali.</p><div class="notice">Stato: interfaccia pronta · integrazione dati astronomici in sviluppo.</div></div>
     </section>
 
     <section class="view content-view" id="timeView" data-view="time">
-      <div class="content-shell"><div class="eyebrow">TIME · REALITY REPLAY</div><h1 class="hero-title">La stessa realtà, nel tempo.</h1><p class="hero-copy">Archivi osservati, ricostruzioni scientifiche e simulazioni resteranno sempre separati e dichiarati.</p><div class="notice">Stato: interfaccia pronta · timeline scientifica in sviluppo.</div></div>
+      <div class="content-shell"><div class="eyebrow">TIME · REALITY REPLAY</div><h1 class="hero-title">La stessa realtà, nel tempo.</h1><p class="hero-copy">Archivi osservati, ricostruzioni scientifiche e simulazioni resteranno separati e dichiarati.</p><div class="notice">Stato: interfaccia pronta · timeline scientifica in sviluppo.</div></div>
     </section>
   </main>
 
@@ -98,16 +100,19 @@
   </section>
 
   <section class="sheet" id="layersSheet" aria-hidden="true">
-    <header class="sheet-head"><div><small>REALITY LAYERS</small><h2>Livelli visibili</h2></div><button class="close-btn" data-close>×</button></header>
+    <header class="sheet-head"><div><small>REALITY LAYERS</small><h2>Come vuoi vedere la Terra</h2></div><button class="close-btn" data-close>×</button></header>
     <div class="sheet-body">
-      <div class="list-row"><div><b>Immagini satellitari</b><small id="imagerySourceLabel">Sentinel-2 Cloudless 2025</small></div><button class="toggle on" id="imageryToggle"></button></div>
-      <div class="list-row"><div><b>Confini e nomi</b><small>EOX / OpenStreetMap</small></div><button class="toggle on" id="labelsToggle"></button></div>
+      <div class="segmented" id="baseModeControl"><button class="active" data-base="map">MAPPA</button><button data-base="satellite">SATELLITE</button></div>
+      <div class="list-row"><div><b>Nomi di paesi, città e luoghi</b><small>OpenStreetMap / OpenFreeMap</small></div><button class="toggle on" id="labelsToggle"></button></div>
+      <div class="list-row"><div><b>Terreno 3D</b><small>Modello digitale di elevazione Mapterhorn</small></div><button class="toggle" id="terrainToggle"></button></div>
+      <div class="list-row"><div><b>Edifici 3D</b><small>Quando disponibili nei dati OpenStreetMap</small></div><button class="toggle on" id="buildingsToggle"></button></div>
       <div class="list-row"><div><b>Terremoti</b><small>USGS · ultime 24 ore</small></div><button class="toggle on" id="quakeToggle"></button></div>
+      <div class="source-note">La vista satellite usa immagini reali ma non è una ripresa live. La mappa vettoriale mostra strade, nomi e punti d'interesse a livelli di zoom progressivi.</div>
     </div>
   </section>
 
   <section class="sheet" id="infoSheet" aria-hidden="true">
-    <header class="sheet-head"><div><small id="infoKicker">VERIFIED REALITY</small><h2 id="infoTitle">Fonti Earth</h2></div><button class="close-btn" data-close>×</button></header>
+    <header class="sheet-head"><div><small id="infoKicker">VERIFIED REALITY</small><h2 id="infoTitle">Informazioni</h2></div><button class="close-btn" data-close>×</button></header>
     <div class="sheet-body" id="infoBody"></div>
   </section>
 
@@ -122,6 +127,6 @@
 
   <div class="toast" id="toast"></div>
 </div>
-<script type="module" src="./app.mjs?v=4"></script>
+<script type="module" src="./app.mjs?v=5"></script>
 </body>
 </html>
