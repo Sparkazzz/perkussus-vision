@@ -1,78 +1,127 @@
 <!doctype html>
 <html lang="it">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#050812">
-<title>Perkussus Vision — Reality Explorer</title>
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.9.0/dist/maplibre-gl.css">
-<style>
-:root{--bg:#050812;--panel:#0b1220;--panel2:#111a2a;--line:rgba(255,255,255,.11);--text:#f7f9fd;--muted:#95a2b7;--cyan:#75e8ff;--green:#6df0b2;--amber:#ffd36f;--red:#ff7474;--head:58px;--nav:70px;--safeT:env(safe-area-inset-top);--safeB:env(safe-area-inset-bottom)}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overscroll-behavior:none}body{overflow:hidden}button,input{font:inherit}button{cursor:pointer}.app{height:100dvh;position:relative;overflow:hidden;background:var(--bg)}
-header{position:absolute;z-index:50;top:0;left:0;right:0;height:calc(var(--head) + var(--safeT));padding:var(--safeT) 12px 0;display:flex;align-items:center;border-bottom:1px solid var(--line);background:rgba(5,8,18,.94);backdrop-filter:blur(18px)}
-.brand{display:flex;align-items:center;gap:10px}.logo{width:34px;height:34px;border-radius:50%;border:1px solid rgba(117,232,255,.48);position:relative;box-shadow:0 0 26px rgba(117,232,255,.13)}.logo:before,.logo:after{content:"";position:absolute;border-radius:50%;border:2px solid var(--cyan)}.logo:before{inset:7px}.logo:after{inset:13px;border-color:#fff}.brand b{font-size:13px;letter-spacing:.17em}.desktop-tabs{display:flex;gap:5px;margin-left:22px}.tab{border:0;background:transparent;color:#8290a5;font-weight:800;font-size:11px;letter-spacing:.08em;padding:9px 11px;border-radius:10px}.tab.active{background:rgba(255,255,255,.08);color:#fff}.head-actions{margin-left:auto;display:flex;gap:8px}.icon{width:40px;height:40px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.055);color:#fff;display:grid;place-items:center;font-size:18px}
-.main{position:absolute;top:calc(var(--head) + var(--safeT));bottom:calc(var(--nav) + var(--safeB));left:0;right:0;overflow:hidden}.view{position:absolute;inset:0;display:none}.view.active{display:block}#earthView{background:#02050b}#map{position:absolute;inset:0;background:#02050b}.maplibregl-canvas{outline:none}.maplibregl-ctrl-bottom-right{right:6px;bottom:6px}.maplibregl-ctrl-attrib{font-size:9px!important;background:rgba(5,8,18,.74)!important;color:#b9c4d4!important}.maplibregl-ctrl-attrib a{color:#fff!important}
-.chips{position:absolute;z-index:6;left:10px;top:10px;display:flex;gap:7px;max-width:calc(100% - 72px);pointer-events:none}.chip{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(5,10,20,.82);backdrop-filter:blur(12px);font-size:10px;color:#dce5f1}.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 11px var(--green)}.chip strong{color:var(--green);letter-spacing:.08em}.tools{position:absolute;z-index:7;top:10px;right:10px;display:flex;flex-direction:column;gap:8px}.tool{width:44px;height:44px;border:1px solid var(--line);border-radius:15px;background:rgba(5,10,20,.88);backdrop-filter:blur(12px);color:#fff;font-size:18px}.hint{position:absolute;z-index:6;left:50%;bottom:14px;transform:translateX(-50%);white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:rgba(5,10,20,.8);font-size:10px;color:#ccd5e4;transition:.25s}.hint.hide{opacity:0;pointer-events:none}
-.loading{position:absolute;z-index:9;inset:0;display:grid;place-items:center;background:#02050b;transition:.25s}.loading.hidden{opacity:0;pointer-events:none}.loader{text-align:center}.loader-earth{width:90px;height:90px;margin:auto;border-radius:50%;background:radial-gradient(circle at 32% 27%,#8ee8ff,#227aa7 48%,#0a3151 75%);box-shadow:0 0 70px rgba(66,180,255,.25);animation:pulse 1.8s infinite}.loader b{display:block;margin-top:18px;letter-spacing:.13em;font-size:12px}.loader small{display:block;color:var(--muted);margin-top:7px;font-size:10px}@keyframes pulse{50%{transform:scale(1.045)}}
-.map-error{position:absolute;z-index:10;inset:0;display:none;place-items:center;padding:24px;background:linear-gradient(#050812,#07101d)}.map-error.open{display:grid}.error-card{max-width:420px;border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.045);padding:18px}.error-card h2{font-size:20px;margin:0 0 8px}.error-card p{font-size:12px;color:var(--muted);line-height:1.6;margin:0 0 14px}.primary{height:44px;border:0;border-radius:13px;background:#fff;color:#07101b;font-weight:900;padding:0 16px}
-.bottom{position:absolute;z-index:55;left:0;right:0;bottom:0;height:calc(var(--nav) + var(--safeB));padding-bottom:var(--safeB);display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);background:rgba(5,8,18,.98);backdrop-filter:blur(18px)}.nav{border:0;background:transparent;color:#7d889b;font-size:9px;font-weight:800;letter-spacing:.04em;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}.nav span{font-size:20px}.nav.active{color:#fff}.nav.active span{color:var(--cyan)}
-.content{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:26px 16px 105px;background:radial-gradient(circle at 75% 6%,rgba(75,117,255,.18),transparent 34%),linear-gradient(#050812,#090e19)}.shell{max-width:1000px;margin:auto}.eyebrow{font-size:10px;font-weight:900;letter-spacing:.16em;color:var(--cyan)}.content h1{font-size:42px;line-height:.97;letter-spacing:-.04em;margin:14px 0}.lead{color:#a7b3c5;line-height:1.65;font-size:14px;max-width:720px}.cards{display:grid;grid-template-columns:1fr;gap:11px;margin-top:22px}.card{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.042);padding:16px}.card h3{margin:8px 0 7px;font-size:17px}.card p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}.real{color:var(--green)}.soon{color:var(--amber)}
-.scrim{position:absolute;z-index:70;inset:0;background:rgba(0,0,0,.44);opacity:0;pointer-events:none;transition:.18s}.scrim.open{opacity:1;pointer-events:auto}.sheet{position:absolute;z-index:80;left:8px;right:8px;bottom:calc(var(--nav) + var(--safeB) + 8px);max-height:min(72dvh,650px);display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:24px;background:rgba(9,15,28,.98);box-shadow:0 24px 70px rgba(0,0,0,.45);transform:translateY(calc(100% + 120px));transition:transform .22s cubic-bezier(.2,.8,.2,1)}.sheet.open{transform:translateY(0)}.sheet-head{padding:14px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}.sheet-head>div{flex:1;min-width:0}.sheet-head small{display:block;font-size:9px;color:var(--cyan);font-weight:900;letter-spacing:.15em}.sheet-head h2{font-size:18px;margin:4px 0 0}.close{width:38px;height:38px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.055);color:#fff;font-size:23px;flex:0 0 auto}.sheet-body{padding:14px;overflow:auto;-webkit-overflow-scrolling:touch}.sheet-body p{font-size:12px;line-height:1.55;color:var(--muted);margin:0 0 14px}.section{border-top:1px solid var(--line);padding-top:13px;margin-top:13px}.row{display:flex;align-items:center;gap:12px;padding:10px 0}.row+.row{border-top:1px solid rgba(255,255,255,.07)}.copy{min-width:0;flex:1}.copy b{display:block;font-size:13px}.copy small{display:block;font-size:10px;color:var(--muted);margin-top:3px}.toggle{width:46px;height:27px;border:0;border-radius:999px;background:#293348;padding:3px}.toggle:before{content:"";display:block;width:21px;height:21px;border-radius:50%;background:#fff;transition:.18s}.toggle.on{background:#19785f}.toggle.on:before{transform:translateX(19px)}.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.quick{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.05);color:#fff;padding:12px;text-align:left}.quick b{display:block;font-size:12px}.quick small{display:block;font-size:10px;color:var(--muted);margin-top:3px}.search-row{display:flex;gap:8px}.search-row input{min-width:0;flex:1;height:46px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.055);color:#fff;padding:0 12px;outline:none}.status{min-height:18px;margin-top:8px;font-size:10px;color:var(--muted)}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}.metric{border:1px solid var(--line);border-radius:13px;padding:10px;background:rgba(255,255,255,.035)}.metric b{display:block;font-size:15px}.metric small{display:block;font-size:9px;color:var(--muted);margin-top:2px}.source{margin-top:12px;border:1px solid rgba(109,240,178,.2);background:rgba(109,240,178,.055);border-radius:13px;padding:10px;font-size:10px;color:#d0ebdf;line-height:1.5}.menu{display:grid;gap:8px}.menu button{border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.045);color:#fff;text-align:left;padding:13px}.menu b{display:block;font-size:13px}.menu small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.toast{position:absolute;z-index:100;left:50%;bottom:calc(var(--nav) + var(--safeB) + 18px);transform:translate(-50%,20px);opacity:0;background:#fff;color:#07101b;border-radius:999px;padding:10px 14px;font-size:11px;font-weight:800;white-space:nowrap;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:850px){.desktop-tabs{display:none}.maplibregl-ctrl-top-right{display:none}.chip.secondary{display:none}}
-@media(min-width:851px){:root{--head:64px;--nav:0px}.bottom{display:none}.main{bottom:0}.content{padding:42px 28px 70px}.cards{grid-template-columns:repeat(3,1fr)}.sheet{left:auto;right:16px;top:calc(var(--head) + 16px);bottom:16px;width:370px;max-height:none;transform:translateX(calc(100% + 50px))}.sheet.open{transform:translateX(0)}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#050812">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Perkussus Vision — Reality Explorer</title>
+  <link rel="stylesheet" href="./styles.css?v=4">
 </head>
 <body>
-<div class="app">
-<header><div class="brand"><div class="logo"></div><b>PERKUSSUS</b></div><nav class="desktop-tabs"><button class="tab active" data-view="earth">EARTH</button><button class="tab" data-view="live">LIVE</button><button class="tab" data-view="space">SPACE</button><button class="tab" data-view="time">TIME</button><button class="tab" data-view="knowledge">KNOWLEDGE</button></nav><div class="head-actions"><button class="icon" id="searchOpen" aria-label="Cerca">⌕</button><button class="icon" id="layersOpen" aria-label="Layer">≋</button></div></header>
-<main class="main">
-<section class="view active" id="earthView"><div id="map"></div><div class="loading" id="loading"><div class="loader"><div class="loader-earth"></div><b>CARICAMENTO TERRA REALE</b><small>Satellite imagery + live data</small></div></div><div class="map-error" id="mapError"><div class="error-card"><h2>La mappa non si è caricata.</h2><p id="errorText">Riprova. Se il problema continua, l’accesso alla libreria cartografica o alle tile satellitari è stato bloccato.</p><button class="primary" onclick="location.reload()">RIPROVA</button></div></div><div class="chips"><div class="chip"><span class="dot"></span><strong>REAL EARTH</strong></div><div class="chip secondary" id="dataChip">USGS · in attesa</div></div><div class="tools"><button class="tool" id="locateBtn" aria-label="La mia posizione">◎</button><button class="tool" id="homeBtn" aria-label="Vista globale">⌂</button><button class="tool" id="projectionBtn" aria-label="3D o 2D">3D</button><button class="tool" id="earthInfoOpen" aria-label="Informazioni">i</button></div><div class="hint" id="hint">Trascina · pizzica per zoomare · 2 dita per inclinare</div></section>
-<section class="view" id="liveView"><div class="content"><div class="shell"><div class="eyebrow">LIVE EARTH</div><h1>Il pianeta mentre cambia.</h1><p class="lead">Dati operativi con fonte e timestamp. I terremoti USGS sono già collegati al globo Earth.</p><div class="cards"><div class="card"><div class="eyebrow real">ATTIVO</div><h3>Terremoti · USGS</h3><p>Magnitudo, profondità, posizione e orario dagli eventi delle ultime 24 ore.</p></div><div class="card"><div class="eyebrow soon">PROSSIMO</div><h3>Meteo</h3><p>Layer meteorologici reali con aggiornamento e provenienza dichiarati.</p></div><div class="card"><div class="eyebrow soon">PROSSIMO</div><h3>ISS & Satelliti</h3><p>Posizioni orbitali e passaggi basati su dati verificabili.</p></div></div></div></div></section>
-<section class="view" id="spaceView"><div class="content"><div class="shell"><div class="eyebrow">SPACE</div><h1>Dalla Terra all’universo.</h1><p class="lead">Questa sezione sarà collegata a cataloghi NASA, ESA e archivi astronomici. Finché un dataset non è integrato, non viene presentato come reale.</p></div></div></section>
-<section class="view" id="timeView"><div class="content"><div class="shell"><div class="eyebrow">TIME · REALITY REPLAY</div><h1>La realtà attraverso il tempo.</h1><p class="lead">Archivi reali, ricostruzioni scientifiche e simulazioni saranno sempre separati e identificati.</p></div></div></section>
-<section class="view" id="knowledgeView"><div class="content"><div class="shell"><div class="eyebrow">KNOWLEDGE</div><h1>DNA of Knowledge.</h1><p class="lead">Ogni luogo, oggetto ed evento diventa un nodo con dati, fonti, relazioni e cronologia.</p></div></div></section>
-</main>
-<nav class="bottom"><button class="nav active" data-view="earth"><span>◎</span>EARTH</button><button class="nav" data-view="live"><span>⌁</span>LIVE</button><button class="nav" data-view="space"><span>◌</span>SPACE</button><button class="nav" data-view="time"><span>◷</span>TIME</button><button class="nav" id="moreOpen"><span>•••</span>ALTRO</button></nav>
-<div class="scrim" id="scrim"></div>
-<section class="sheet" id="searchSheet"><div class="sheet-head"><div><small>ASK & GO</small><h2>Cerca un luogo reale</h2></div><button class="close" data-close>×</button></div><div class="sheet-body"><form id="searchForm" class="search-row"><input id="searchInput" placeholder="Roma, Everest, Tokyo…" autocomplete="off"><button class="primary">VAI</button></form><div class="status" id="searchStatus"></div><div class="section"><div class="quick-grid"><button class="quick" data-go="12.4964,41.9028,12,Roma"><b>Roma</b><small>Italia</small></button><button class="quick" data-go="86.925,27.9881,10,Everest"><b>Everest</b><small>Himalaya</small></button><button class="quick" data-go="-155.292,19.421,10,Kīlauea"><b>Kīlauea</b><small>Hawaiʻi</small></button><button class="quick" data-go="139.6917,35.6895,11,Tokyo"><b>Tokyo</b><small>Giappone</small></button></div></div></div></section>
-<section class="sheet" id="layersSheet"><div class="sheet-head"><div><small>REALITY LAYERS</small><h2>Cosa vuoi vedere</h2></div><button class="close" data-close>×</button></div><div class="sheet-body"><div class="row"><div class="copy"><b>Satellite imagery</b><small>Esri World Imagery</small></div><button class="toggle on" id="imageryToggle"></button></div><div class="row"><div class="copy"><b>Terremoti</b><small>USGS · ultime 24 ore</small></div><button class="toggle on" id="quakeToggle"></button></div><div class="source">“Real” significa dati o immagini da una fonte reale. Le immagini satellitari sono mosaici acquisiti in date diverse: non sono una telecamera live.</div></div></section>
-<section class="sheet" id="infoSheet"><div class="sheet-head"><div><small id="infoKicker">REALITY DATA</small><h2 id="infoTitle">Earth</h2></div><button class="close" data-close>×</button></div><div class="sheet-body"><p id="infoText">Globo interattivo con immagini satellitari e feed geofisici.</p><div class="metrics" id="metrics"><div class="metric"><b>3D</b><small>Globe</small></div><div class="metric"><b>Live</b><small>USGS</small></div></div><div class="source" id="infoSource">Imagery: Esri · Earthquakes: USGS.</div></div></section>
-<section class="sheet" id="moreSheet"><div class="sheet-head"><div><small>PERKUSSUS</small><h2>Esplora</h2></div><button class="close" data-close>×</button></div><div class="sheet-body"><div class="menu"><button data-more-view="knowledge"><b>Knowledge</b><small>DNA of Knowledge & Reality Graph</small></button><button><b>Missions</b><small>In sviluppo</small></button><button><b>Passport</b><small>In sviluppo</small></button><button><b>Settings</b><small>In sviluppo</small></button></div></div></section>
-<div class="toast" id="toast"></div>
+<div id="app" class="app">
+  <header class="topbar">
+    <button class="brand" data-action="home" aria-label="Perkussus Vision home">
+      <span class="brand-mark"><i></i></span>
+      <span class="brand-copy"><b>PERKUSSUS</b><small>VISION · REALITY OS</small></span>
+    </button>
+    <div class="header-actions">
+      <button class="icon-btn" id="searchOpen" aria-label="Cerca">⌕</button>
+      <button class="icon-btn" id="layersOpen" aria-label="Livelli">≋</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="view active" id="earthView" data-view="earth">
+      <div id="map"></div>
+      <div class="map-ui">
+        <div class="chips">
+          <div class="chip"><span class="live-dot"></span><strong>REAL EARTH</strong></div>
+          <div class="chip secondary" id="dataChip">INIZIALIZZAZIONE…</div>
+        </div>
+        <div class="map-tools">
+          <button class="map-tool" id="locateBtn" aria-label="La mia posizione">◎</button>
+          <button class="map-tool" id="homeBtn" aria-label="Vista globale">⌂</button>
+          <button class="map-tool" id="projectionBtn" aria-label="Cambia proiezione">3D</button>
+          <button class="map-tool" id="earthInfoOpen" aria-label="Fonti dati">i</button>
+        </div>
+        <div class="gesture" id="gestureHint">Trascina · pizzica per zoomare · 2 dita per inclinare</div>
+      </div>
+      <div class="boot" id="boot">
+        <div class="boot-card">
+          <div class="planet-loader"></div>
+          <small>PERKUSSUS REALITY ENGINE</small>
+          <h2 id="bootTitle">Caricamento Terra reale…</h2>
+          <p id="bootText">Avvio del motore cartografico.</p>
+          <div class="boot-progress"><span id="bootBar"></span></div>
+          <button id="retryBtn" class="primary hidden">RIPROVA</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="view content-view" id="liveView" data-view="live">
+      <div class="content-shell">
+        <div class="eyebrow">LIVE EARTH · DATI OPERATIVI</div>
+        <h1 class="hero-title">Il pianeta mentre cambia.</h1>
+        <p class="hero-copy">Qui compaiono solo feed realmente collegati. Ogni dataset mostra fonte e aggiornamento.</p>
+        <div class="stat-grid">
+          <article class="stat"><small>USGS · 24H</small><b id="liveQuakeCount">—</b><span>terremoti nel feed</span></article>
+          <article class="stat"><small>MAGNITUDO MAX</small><b id="liveMaxMag">—</b><span id="liveMaxPlace">in attesa dati</span></article>
+        </div>
+        <div class="section-title"><b>Eventi recenti</b><small>tocca un evento per localizzarlo sulla Terra</small></div>
+        <div id="quakeList" class="event-list"><div class="skeleton">Caricamento USGS…</div></div>
+      </div>
+    </section>
+
+    <section class="view content-view" id="spaceView" data-view="space">
+      <div class="content-shell"><div class="eyebrow">SPACE</div><h1 class="hero-title">Spazio, senza dati inventati.</h1><p class="hero-copy">Il modulo Space verrà collegato a cataloghi e missioni reali. Finché un dataset non è integrato, Perkussus lo indica chiaramente come non attivo.</p><div class="notice">Stato: interfaccia pronta · integrazione dati astronomici in sviluppo.</div></div>
+    </section>
+
+    <section class="view content-view" id="timeView" data-view="time">
+      <div class="content-shell"><div class="eyebrow">TIME · REALITY REPLAY</div><h1 class="hero-title">La stessa realtà, nel tempo.</h1><p class="hero-copy">Archivi osservati, ricostruzioni scientifiche e simulazioni resteranno sempre separati e dichiarati.</p><div class="notice">Stato: interfaccia pronta · timeline scientifica in sviluppo.</div></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Navigazione principale">
+    <button class="nav-btn active" data-nav="earth"><span>◎</span><b>EARTH</b></button>
+    <button class="nav-btn" data-nav="live"><span>⌁</span><b>LIVE</b></button>
+    <button class="nav-btn" data-nav="space"><span>◌</span><b>SPACE</b></button>
+    <button class="nav-btn" data-nav="time"><span>◷</span><b>TIME</b></button>
+    <button class="nav-btn" id="moreOpen"><span>•••</span><b>ALTRO</b></button>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+
+  <section class="sheet" id="searchSheet" aria-hidden="true">
+    <header class="sheet-head"><div><small>ASK & GO</small><h2>Cerca un luogo reale</h2></div><button class="close-btn" data-close>×</button></header>
+    <div class="sheet-body">
+      <form id="searchForm" class="search-row"><input id="searchInput" placeholder="Roma, Everest, Tokyo…" autocomplete="off"><button class="primary">VAI</button></form>
+      <div id="searchStatus" class="status-line"></div>
+      <div class="quick-grid">
+        <button class="quick" data-place="rome"><b>Roma</b><small>Italia</small></button>
+        <button class="quick" data-place="everest"><b>Everest</b><small>Himalaya</small></button>
+        <button class="quick" data-place="kilauea"><b>Kīlauea</b><small>Hawaiʻi</small></button>
+        <button class="quick" data-place="tokyo"><b>Tokyo</b><small>Giappone</small></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="layersSheet" aria-hidden="true">
+    <header class="sheet-head"><div><small>REALITY LAYERS</small><h2>Livelli visibili</h2></div><button class="close-btn" data-close>×</button></header>
+    <div class="sheet-body">
+      <div class="list-row"><div><b>Immagini satellitari</b><small id="imagerySourceLabel">Sentinel-2 Cloudless 2025</small></div><button class="toggle on" id="imageryToggle"></button></div>
+      <div class="list-row"><div><b>Confini e nomi</b><small>EOX / OpenStreetMap</small></div><button class="toggle on" id="labelsToggle"></button></div>
+      <div class="list-row"><div><b>Terremoti</b><small>USGS · ultime 24 ore</small></div><button class="toggle on" id="quakeToggle"></button></div>
+    </div>
+  </section>
+
+  <section class="sheet" id="infoSheet" aria-hidden="true">
+    <header class="sheet-head"><div><small id="infoKicker">VERIFIED REALITY</small><h2 id="infoTitle">Fonti Earth</h2></div><button class="close-btn" data-close>×</button></header>
+    <div class="sheet-body" id="infoBody"></div>
+  </section>
+
+  <section class="sheet" id="moreSheet" aria-hidden="true">
+    <header class="sheet-head"><div><small>PERKUSSUS</small><h2>Altri moduli</h2></div><button class="close-btn" data-close>×</button></header>
+    <div class="sheet-body menu-list">
+      <button class="menu-item" data-action="sources"><span>◇</span><div><b>Fonti & trasparenza</b><small>Provenienza, data e licenze</small></div></button>
+      <button class="menu-item" data-action="missions"><span>△</span><div><b>Missions</b><small>In sviluppo</small></div></button>
+      <button class="menu-item" data-action="passport"><span>▣</span><div><b>Passport</b><small>In sviluppo</small></div></button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast"></div>
 </div>
-<script>
-window.__perkussusMapReady=false;
-setTimeout(()=>{if(!window.__perkussusMapReady){document.getElementById('loading')?.classList.add('hidden');document.getElementById('mapError')?.classList.add('open')}},12000);
-</script>
-<script type="module">
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-let maplibregl;
-try{maplibregl=await import('https://unpkg.com/maplibre-gl@6.9.0/dist/maplibre-gl.mjs')}catch(e){maplibregl=await import('https://cdn.jsdelivr.net/npm/maplibre-gl@6.9.0/dist/maplibre-gl.mjs')}
-let mapReady=false,projection='globe',quakesVisible=true,imageryVisible=true,activeSheet=null;
-const toast=t=>{const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),1800)};
-function closeSheets(){$$('.sheet.open').forEach(x=>x.classList.remove('open'));$('#scrim').classList.remove('open');activeSheet=null}
-function openSheet(id){closeSheets();const el=$(id);el.classList.add('open');$('#scrim').classList.add('open');activeSheet=el}
-$('#scrim').onclick=closeSheets;$$('[data-close]').forEach(b=>b.onclick=closeSheets);$('#searchOpen').onclick=()=>openSheet('#searchSheet');$('#layersOpen').onclick=()=>openSheet('#layersSheet');$('#earthInfoOpen').onclick=()=>openSheet('#infoSheet');$('#moreOpen').onclick=()=>openSheet('#moreSheet');
-function switchView(name){closeSheets();$$('.view').forEach(v=>v.classList.toggle('active',v.id===name+'View'));$$('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));if(name==='earth'&&mapReady)setTimeout(()=>map.resize(),40)}
-$$('[data-view]').forEach(b=>b.onclick=()=>switchView(b.dataset.view));$$('[data-more-view]').forEach(b=>b.onclick=()=>switchView(b.dataset.moreView));
-const style={version:8,projection:{type:'globe'},sources:{imagery:{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,attribution:'Tiles © Esri'}},layers:[{id:'imagery',type:'raster',source:'imagery'}],sky:{'atmosphere-blend':['interpolate',['linear'],['zoom'],0,1,5,1,7,0]}};
-let map;
-try{
- map=new maplibregl.Map({container:'map',style,center:[12.5,20],zoom:1.6,pitch:0,bearing:0,attributionControl:true,canvasContextAttributes:{antialias:true}});
- map.touchZoomRotate.enable();map.dragRotate.enable();
- map.on('style.load',()=>{try{map.setProjection({type:'globe'})}catch(e){}});
- map.on('load',()=>{mapReady=true;window.__perkussusMapReady=true;$('#loading').classList.add('hidden');fetchQuakes();setInterval(fetchQuakes,60000)});
- map.on('error',e=>{console.warn('MapLibre',e?.error||e)});
- map.on('dragstart',()=>{closeSheets();$('#hint').classList.add('hide')});map.on('zoomstart',()=>$('#hint').classList.add('hide'));
-}catch(e){$('#loading').classList.add('hidden');$('#mapError').classList.add('open');$('#errorText').textContent='Errore inizializzazione mappa: '+(e?.message||e)}
-async function fetchQuakes(){if(!mapReady)return;try{const r=await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson',{cache:'no-store'});if(!r.ok)throw new Error('USGS '+r.status);const data=await r.json();$('#dataChip').textContent='USGS · '+data.features.length+' eventi / 24h';if(map.getSource('quakes'))map.getSource('quakes').setData(data);else{map.addSource('quakes',{type:'geojson',data});map.addLayer({id:'quakeGlow',type:'circle',source:'quakes',paint:{'circle-radius':['interpolate',['linear'],['get','mag'],0,5,3,10,6,18],'circle-color':'#ff6d64','circle-opacity':.17,'circle-blur':.7}});map.addLayer({id:'quakes',type:'circle',source:'quakes',paint:{'circle-radius':['interpolate',['linear'],['get','mag'],0,2.5,3,5,6,9],'circle-color':['interpolate',['linear'],['get','mag'],0,'#ffd36f',4,'#ff9a66',6,'#ff5f68'],'circle-stroke-color':'rgba(255,255,255,.78)','circle-stroke-width':.8,'circle-opacity':.88}});map.on('click','quakes',e=>{const f=e.features?.[0];if(!f)return;const p=f.properties||{},c=f.geometry.coordinates;$('#infoKicker').textContent='USGS · REAL EVENT';$('#infoTitle').textContent=p.place||'Terremoto';$('#infoText').textContent='Evento sismico registrato nelle ultime 24 ore.';$('#metrics').innerHTML=`<div class="metric"><b>M ${p.mag??'—'}</b><small>Magnitudo</small></div><div class="metric"><b>${Number(c[2]||0).toFixed(1)} km</b><small>Profondità</small></div>`;$('#infoSource').textContent='Fonte: USGS Earthquake Hazards Program · '+new Date(p.time).toLocaleString('it-IT');openSheet('#infoSheet')});map.on('mouseenter','quakes',()=>map.getCanvas().style.cursor='pointer');map.on('mouseleave','quakes',()=>map.getCanvas().style.cursor='')}}}catch(e){$('#dataChip').textContent='USGS · non disponibile'}}
-$('#projectionBtn').onclick=()=>{if(!mapReady)return;projection=projection==='globe'?'mercator':'globe';map.setProjection({type:projection});$('#projectionBtn').textContent=projection==='globe'?'3D':'2D';toast(projection==='globe'?'Globo 3D':'Mappa 2D')};
-$('#homeBtn').onclick=()=>mapReady&&map.flyTo({center:[12.5,20],zoom:1.6,pitch:0,bearing:0,duration:1200,essential:true});
-$('#locateBtn').onclick=()=>{if(!navigator.geolocation){toast('Posizione non disponibile');return}toast('Cerco la tua posizione…');navigator.geolocation.getCurrentPosition(p=>{switchView('earth');map.flyTo({center:[p.coords.longitude,p.coords.latitude],zoom:14,duration:1400,essential:true})},()=>toast('Permesso posizione non disponibile'),{enableHighAccuracy:true,timeout:10000,maximumAge:60000})};
-$('#imageryToggle').onclick=e=>{imageryVisible=!imageryVisible;e.currentTarget.classList.toggle('on',imageryVisible);if(mapReady&&map.getLayer('imagery'))map.setLayoutProperty('imagery','visibility',imageryVisible?'visible':'none')};
-$('#quakeToggle').onclick=e=>{quakesVisible=!quakesVisible;e.currentTarget.classList.toggle('on',quakesVisible);['quakes','quakeGlow'].forEach(id=>{if(mapReady&&map.getLayer(id))map.setLayoutProperty(id,'visibility',quakesVisible?'visible':'none')})};
-$$('[data-go]').forEach(b=>b.onclick=()=>{const [lng,lat,z,name]=b.dataset.go.split(',');closeSheets();switchView('earth');map.flyTo({center:[+lng,+lat],zoom:+z,duration:1400,essential:true});toast(name)});
-$('#searchForm').onsubmit=async e=>{e.preventDefault();const q=$('#searchInput').value.trim();if(!q)return;$('#searchStatus').textContent='Ricerca…';try{const u='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(q);const r=await fetch(u,{headers:{'Accept':'application/json'}});const a=await r.json();if(!a.length){$('#searchStatus').textContent='Nessun risultato';return}const x=a[0];$('#searchStatus').textContent=x.display_name;closeSheets();switchView('earth');map.flyTo({center:[+x.lon,+x.lat],zoom:11,duration:1500,essential:true});$('#infoKicker').textContent='SEARCH RESULT';$('#infoTitle').textContent=q;$('#infoText').textContent=x.display_name;$('#metrics').innerHTML=`<div class="metric"><b>${(+x.lat).toFixed(4)}</b><small>Latitudine</small></div><div class="metric"><b>${(+x.lon).toFixed(4)}</b><small>Longitudine</small></div>`;$('#infoSource').textContent='Geocoding: OpenStreetMap Nominatim';setTimeout(()=>openSheet('#infoSheet'),500)}catch(err){$('#searchStatus').textContent='Ricerca non disponibile'}};
-</script>
+<script type="module" src="./app.mjs?v=4"></script>
 </body>
 </html>
